@@ -1,0 +1,15 @@
+langchain4j:
+  community:
+    dashscope:
+      chat-model:
+        model-name: qwen-plus
+        api-key: ${API-KEY}
+      embedding-model:
+        model-name: text-embedding-v4
+        api-key: ${API-KEY}
+
+minio:
+  endpoint: http://localhost:9000
+  access-key: ${MINIO_ACCESS_KEY}
+  secret-key: ${MINIO_SECRET_KEY}
+  bucket: ${MINIO_BUCKET}

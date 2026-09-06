@@ -1,7 +1,8 @@
 package com.rag.nexusrag.interfaces.controller;
 
+import com.rag.nexusrag.document.dto.DocumentUploadResult;
+import com.rag.nexusrag.common.response.ApiResponse;
 import com.rag.nexusrag.document.service.DocumentStorageService;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -19,8 +20,9 @@ public class DocumentController {
     }
 
     @PostMapping("/upload")
-    public String upload(@RequestPart("file") MultipartFile file){
-        return documentStorageService.upload(file);
+    public ApiResponse<DocumentUploadResult> upload(@RequestPart("file") MultipartFile file){
+        DocumentUploadResult r = documentStorageService.upload(file);
+        return ApiResponse.success(r);
     }
 
 }

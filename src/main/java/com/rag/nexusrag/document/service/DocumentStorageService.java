@@ -1,6 +1,7 @@
 package com.rag.nexusrag.document.service;
 
 import com.rag.nexusrag.common.config.MinioProperties;
+import com.rag.nexusrag.document.dto.DocumentUploadResult;
 import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
@@ -23,7 +24,7 @@ public class DocumentStorageService {
         this.minioProperties = minioProperties;
     }
 
-    public String upload(MultipartFile file){
+    public DocumentUploadResult upload(MultipartFile file){
         if (file == null || file.isEmpty()){
             throw new IllegalArgumentException("上传文件不能为空");
         }
@@ -58,7 +59,13 @@ public class DocumentStorageService {
                             .build()
             );
             log.info("文档已成功上传到 MinIO 文件名：{}",objectName);
-            return objectName;
+            return new DocumentUploadResult(
+                    bucket,
+                    objectName,
+                    file.getOriginalFilename(),
+                    file.getContentType(),
+                    file.getSize()
+            );
         } catch (Exception e) {
             throw new RuntimeException("上传文档到 MinIO 失败", e);
         }

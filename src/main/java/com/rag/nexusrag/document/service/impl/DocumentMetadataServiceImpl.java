@@ -41,12 +41,14 @@ public class DocumentMetadataServiceImpl extends ServiceImpl<DocumentFileMapper,
     @Override
     public DocumentUploadResult queryByID(Long id){
         DocumentFile documentFile = getById(id);
+        DocumentUploadResult dto = new DocumentUploadResult();
         if (documentFile != null){
             log.warn("数据库中查到数据:" + documentFile);
+            BeanUtils.copyProperties(documentFile, dto);
+        } else {
+            log.warn("数据库中查询为空:" + documentFile);
+            dto = null;
         }
-        log.error("数据库中查询为空:" + documentFile);
-        DocumentUploadResult dto = new DocumentUploadResult();
-        BeanUtils.copyProperties(documentFile, dto);
         return dto;
     }
 

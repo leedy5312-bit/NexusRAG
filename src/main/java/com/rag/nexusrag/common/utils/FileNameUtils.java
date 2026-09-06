@@ -19,7 +19,7 @@ public final class FileNameUtils {
             "pdf", "doc", "docx", "txt", "md"
     );
 
-    public static void validateAndCleanOriginalFilename(String fileName){
+    public static void validateOriginalFilename(String fileName){
 
         if (fileName.contains("..") || fileName.contains("/") || fileName.contains("\\")){
             throw new BusinessException(ErrorCode.FILE_NAME_INVALID);

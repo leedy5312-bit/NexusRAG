@@ -1,14 +1,7 @@
 package com.rag.nexusrag.document.service;
 
-import com.rag.nexusrag.common.config.MinioProperties;
 import com.rag.nexusrag.common.enums.ErrorCode;
 import com.rag.nexusrag.common.exception.BusinessException;
-import com.rag.nexusrag.common.utils.FileNameUtils;
-import com.rag.nexusrag.common.utils.IdGenerator;
-import com.rag.nexusrag.document.dto.DocumentUploadResult;
-import com.rag.nexusrag.document.entity.DocumentFile;
-import com.rag.nexusrag.document.enums.StorageProvider;
-import com.rag.nexusrag.document.enums.UploadStatus;
 import io.minio.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -50,7 +43,7 @@ public class DocumentStorageService {
             String uuid = UUID.randomUUID().toString().replace("-","");
 
             try (InputStream inputStream = file.getInputStream()) {
-                objectName = "documents/" + LocalDate.now() + "/" + uuid + "-" + originalFilename;
+                objectName = "documents/" + LocalDate.now() + "/" + uuid + "." + StringUtils.getFilenameExtension(originalFilename);
                 minioClient.putObject(
                         PutObjectArgs.builder()
                                 .bucket(bucket)

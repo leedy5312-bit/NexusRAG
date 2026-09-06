@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @TableName("document_file")
 public class DocumentFile {
 
-    @TableId(type = IdType.AUTO)
+    @TableId
     private Long id;
 
     private String documentId;

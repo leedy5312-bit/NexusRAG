@@ -1,5 +1,5 @@
 CREATE TABLE document_file (
-                               id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+                               id BIGINT NOT NULL COMMENT '主键ID',
 
                                document_id VARCHAR(64) NOT NULL COMMENT '文档业务ID，对外使用',
                                original_filename VARCHAR(255) NOT NULL COMMENT '原始文件名',

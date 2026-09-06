@@ -22,6 +22,8 @@ public enum ErrorCode {
     FILE_TYPE_NOT_SUPPORTED(1004, "文件类型不合法", HttpStatus.BAD_REQUEST),
     MINIO_ERROR(1101, "对象存储服务异常", HttpStatus.INTERNAL_SERVER_ERROR),
 
+    DOCUMENT_UPLOAD_FAILED(1201, "文档上传失败", HttpStatus.INTERNAL_SERVER_ERROR),
+
     AI_MODEL_ERROR(2001, "模型调用失败", HttpStatus.INTERNAL_SERVER_ERROR),
     VECTOR_STORE_ERROR(3001, "向量库服务异常", HttpStatus.INTERNAL_SERVER_ERROR),
 

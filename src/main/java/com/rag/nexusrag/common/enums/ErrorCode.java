@@ -14,8 +14,12 @@ public enum ErrorCode {
     MEDIA_TYPE_NOT_SUPPORTED(415, "请求媒体类型不支持", HttpStatus.UNSUPPORTED_MEDIA_TYPE),
 
     FILE_EMPTY(1001, "上传文件不能为空", HttpStatus.BAD_REQUEST),
+    FILE_NAME_EMPTY(10011, "上传文件名称不能为空", HttpStatus.BAD_REQUEST),
+    FILE_NAME_INVALID(10012, "文件名不合法", HttpStatus.BAD_REQUEST),
+    FILE_NAME_TOO_LONG(10013, "文件名过长", HttpStatus.BAD_REQUEST),
     FILE_TOO_LARGE(1002, "上传文件大小超过限制", HttpStatus.BAD_REQUEST),
     FILE_UPLOAD_FAILED(1003, "文件上传失败", HttpStatus.INTERNAL_SERVER_ERROR),
+    FILE_TYPE_NOT_SUPPORTED(1004, "文件类型不合法", HttpStatus.BAD_REQUEST),
     MINIO_ERROR(1101, "对象存储服务异常", HttpStatus.INTERNAL_SERVER_ERROR),
 
     AI_MODEL_ERROR(2001, "模型调用失败", HttpStatus.INTERNAL_SERVER_ERROR),

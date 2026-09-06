@@ -4,11 +4,12 @@ import com.rag.nexusrag.common.config.MinioProperties;
 import com.rag.nexusrag.common.enums.ErrorCode;
 import com.rag.nexusrag.common.exception.BusinessException;
 import com.rag.nexusrag.common.utils.FileNameUtils;
+import com.rag.nexusrag.common.utils.IdGenerator;
 import com.rag.nexusrag.document.dto.DocumentUploadResult;
-import io.minio.BucketExistsArgs;
-import io.minio.MakeBucketArgs;
-import io.minio.MinioClient;
-import io.minio.PutObjectArgs;
+import com.rag.nexusrag.document.entity.DocumentFile;
+import com.rag.nexusrag.document.enums.StorageProvider;
+import com.rag.nexusrag.document.enums.UploadStatus;
+import io.minio.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -24,32 +25,13 @@ public class DocumentStorageService {
 
     private final MinioClient minioClient;
 
-    private final MinioProperties minioProperties;
-
-    public DocumentStorageService(MinioClient minioClient, MinioProperties minioProperties) {
+    public DocumentStorageService(MinioClient minioClient) {
         this.minioClient = minioClient;
-        this.minioProperties = minioProperties;
     }
 
-    public DocumentUploadResult upload(MultipartFile file){
-        if (file == null || file.isEmpty()){
-            throw new BusinessException(ErrorCode.FILE_EMPTY);
-        }
+    public String uploadMinio(MultipartFile file, String bucket, String originalFilename){
 
-        // TODO 文件类型、contentType、文件名称合法性校验、关闭stream流
-
-        String originalFilename = file.getOriginalFilename();
-        if (!StringUtils.hasText(originalFilename)){
-            throw new BusinessException(ErrorCode.FILE_NAME_EMPTY);
-        }
-
-        String bucket = minioProperties.bucket();
-
-        originalFilename = StringUtils.cleanPath(file.getOriginalFilename());
-        FileNameUtils.validateAndCleanOriginalFilename(originalFilename);
-        String uuid = UUID.randomUUID().toString().replace("-","");
-        String objectName = "documents/" + LocalDate.now() + "/" + uuid + "-" + originalFilename;
-
+        String objectName = null;
         try {
             boolean exists = minioClient.bucketExists(
                     BucketExistsArgs.builder()
@@ -65,8 +47,10 @@ public class DocumentStorageService {
                                 .build()
                 );
             }
+            String uuid = UUID.randomUUID().toString().replace("-","");
 
             try (InputStream inputStream = file.getInputStream()) {
+                objectName = "documents/" + LocalDate.now() + "/" + uuid + "-" + originalFilename;
                 minioClient.putObject(
                         PutObjectArgs.builder()
                                 .bucket(bucket)
@@ -76,16 +60,29 @@ public class DocumentStorageService {
                                 .build()
                 );
             }
+
+
             log.info("文档已成功上传到 MinIO 文件名：{}",objectName);
-            return new DocumentUploadResult(
-                    bucket,
-                    objectName,
-                    file.getOriginalFilename(),
-                    file.getContentType(),
-                    file.getSize()
-            );
+
+            return objectName;
+
         } catch (Exception e) {
+            log.error("上传文档到 MinIO 失败", e);
             throw new BusinessException(ErrorCode.FILE_UPLOAD_FAILED, "上传文档到 MinIO 失败", e);
         }
     }
+
+    public void deleteMinio(String bucket, String objectName) {
+        try {
+            minioClient.removeObject(
+                    RemoveObjectArgs.builder()
+                            .bucket(bucket)
+                            .object(objectName)
+                            .build()
+            );
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.MINIO_ERROR, "删除 MinIO 文件失败", e);
+        }
+    }
+
 }

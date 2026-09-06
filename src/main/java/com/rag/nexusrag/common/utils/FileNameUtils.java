@@ -20,6 +20,7 @@ public final class FileNameUtils {
     );
 
     public static void validateAndCleanOriginalFilename(String fileName){
+
         if (fileName.contains("..") || fileName.contains("/") || fileName.contains("\\")){
             throw new BusinessException(ErrorCode.FILE_NAME_INVALID);
         }

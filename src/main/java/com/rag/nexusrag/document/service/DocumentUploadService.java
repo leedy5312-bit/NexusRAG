@@ -5,6 +5,7 @@ import com.rag.nexusrag.common.enums.ErrorCode;
 import com.rag.nexusrag.common.exception.BusinessException;
 import com.rag.nexusrag.common.utils.FileNameUtils;
 import com.rag.nexusrag.common.utils.IdGenerator;
+import com.rag.nexusrag.document.dto.DocumentInfo;
 import com.rag.nexusrag.document.dto.DocumentUploadResult;
 import com.rag.nexusrag.document.dto.StoredObjectInfo;
 import com.rag.nexusrag.document.entity.DocumentFile;
@@ -12,6 +13,7 @@ import com.rag.nexusrag.document.enums.ParseStatus;
 import com.rag.nexusrag.document.enums.StorageProvider;
 import com.rag.nexusrag.document.enums.UploadStatus;
 import jakarta.annotation.Resource;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -87,7 +89,7 @@ public class DocumentUploadService {
                 } catch (BusinessException e) {
                     throw new BusinessException(ErrorCode.MINIO_ERROR, "文件重复，但临时文件删除失败", e);
                 }
-                throw new BusinessException(ErrorCode.FILE_DUPLICATE);
+                throw new BusinessException(ErrorCode.FILE_DUPLICATE, ErrorCode.FILE_DUPLICATE.message() + "：" + originalFilename);
             }
 
             documentFile.setFileHash(fileHash);
@@ -123,7 +125,11 @@ public class DocumentUploadService {
             throw new BusinessException(ErrorCode.DOCUMENT_UPLOAD_FAILED, "文档上传失败", e);
         }
 
-        return documentMetadataService.queryByID(id);
+        DocumentInfo documentInfo = documentMetadataService.queryByID(id);
+        DocumentUploadResult documentUploadResult = new DocumentUploadResult();
+        BeanUtils.copyProperties(documentInfo, documentUploadResult);
+
+        return documentUploadResult;
 
     }
 }

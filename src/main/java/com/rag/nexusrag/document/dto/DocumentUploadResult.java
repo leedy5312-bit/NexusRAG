@@ -8,13 +8,19 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class DocumentUploadResult {
+
     private String documentId;
-    private String bucketName;
-    private String objectName;
+
     private String originalFilename;
+
     private String contentType;
+
     private long fileSize;
+
     private String uploadStatus;
+
     private String parseStatus;
+
     private Integer deleted;
+
 }

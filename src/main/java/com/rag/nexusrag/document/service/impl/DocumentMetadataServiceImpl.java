@@ -13,6 +13,12 @@ import org.springframework.stereotype.Service;
 public class DocumentMetadataServiceImpl extends ServiceImpl<DocumentFileMapper, DocumentFile>
         implements DocumentMetadataService {
 
+    public boolean isFileHashDuplicate(String fileHash){
+        return lambdaQuery()
+                .eq(DocumentFile::getFileHash, fileHash)
+                .exists();
+
+    }
 
 
     /*

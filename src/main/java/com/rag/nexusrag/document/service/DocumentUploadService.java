@@ -6,6 +6,7 @@ import com.rag.nexusrag.common.exception.BusinessException;
 import com.rag.nexusrag.common.utils.FileNameUtils;
 import com.rag.nexusrag.common.utils.IdGenerator;
 import com.rag.nexusrag.document.dto.DocumentUploadResult;
+import com.rag.nexusrag.document.dto.StoredObjectInfo;
 import com.rag.nexusrag.document.entity.DocumentFile;
 import com.rag.nexusrag.document.enums.ParseStatus;
 import com.rag.nexusrag.document.enums.StorageProvider;
@@ -62,7 +63,6 @@ public class DocumentUploadService {
         documentFile.setContentType(file.getContentType());
         documentFile.setFileExtension(StringUtils.getFilenameExtension(originalFilename));
         documentFile.setFileSize(file.getSize());
-        documentFile.setFileHash(null); //TODO 文件哈希值计算未做 SHA-256
         documentFile.setStorageProvider(StorageProvider.MINIO.name());
         documentFile.setUploadStatus(UploadStatus.UPLOADING.name());
         documentFile.setParseStatus(ParseStatus.PENDING.name());
@@ -74,9 +74,25 @@ public class DocumentUploadService {
         documentFile.setDeleted(0);
         try {
             // 存入MinIO
-            objectName = documentStorageService.uploadMinio(file, bucket, originalFilename);
+            StoredObjectInfo objectInfo = documentStorageService.uploadMinio(file, bucket, originalFilename, documentId);
 
-            if (objectName == null){
+            objectName = objectInfo.getObjectName();
+
+            //文件hash值
+            String fileHash = objectInfo.getFileHash();
+
+            if (documentMetadataService.isFileHashDuplicate(fileHash)) {
+                try {
+                    documentStorageService.deleteMinio(bucket, objectName);
+                } catch (BusinessException e) {
+                    throw new BusinessException(ErrorCode.MINIO_ERROR, "文件重复，但临时文件删除失败", e);
+                }
+                throw new BusinessException(ErrorCode.FILE_DUPLICATE);
+            }
+
+            documentFile.setFileHash(fileHash);
+
+            if (objectInfo == null){
                 documentFile.setUploadStatus(UploadStatus.UPLOAD_FAILED.name());
                 documentFile.setErrorMessage("上传文档到MinIO失败.." + ErrorCode.FILE_UPLOAD_FAILED);
                 now = LocalDateTime.now();

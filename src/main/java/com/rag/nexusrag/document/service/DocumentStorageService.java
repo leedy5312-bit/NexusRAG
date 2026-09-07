@@ -111,6 +111,7 @@ public class DocumentStorageService {
                             .object(objectName)
                             .build()
             );
+            log.info("删除 MinIO 文件成功");
         } catch (Exception e) {
             throw new BusinessException(ErrorCode.MINIO_ERROR, "删除 MinIO 文件失败", e);
             //TODO 后期添加消息队列，删除失败的重新删除

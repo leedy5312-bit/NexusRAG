@@ -3,6 +3,8 @@ package com.rag.nexusrag.document.service.impl;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
+import com.rag.nexusrag.common.enums.ErrorCode;
+import com.rag.nexusrag.common.exception.BusinessException;
 import com.rag.nexusrag.common.response.CursorPageResponse;
 import com.rag.nexusrag.common.response.PageResponse;
 import com.rag.nexusrag.document.dto.DocumentInfo;
@@ -44,28 +46,31 @@ public class DocumentMetadataServiceImpl extends ServiceImpl<DocumentFileMapper,
     * */
     @Override
     public void updateDeleteStatus(Long id,int x){
-         boolean ok = update(null, Wrappers.lambdaUpdate(DocumentFile.class)
-                .eq(DocumentFile::getId,id)
-                .set(DocumentFile::getDeleted,x));
+        LocalDateTime now = LocalDateTime.now();
+        boolean ok = update(null, Wrappers.lambdaUpdate(DocumentFile.class)
+                .eq(DocumentFile::getId, id)
+                .set(DocumentFile::getUpdatedAt, now)
+                .set(DocumentFile::getDeleted, x));
          if (ok){
              log.warn("数据库deleted更新成功");
          } else {
              log.error("数据库deleted更新失败");
+             throw new BusinessException(ErrorCode.DB_ERROR);
          }
     }
 
     @Override
-    public DocumentInfo queryByID(Long id){
+    public DocumentFile queryByID(Long id){
         DocumentFile documentFile = getById(id);
-        DocumentInfo dto = new DocumentInfo();
+
         if (documentFile != null){
             log.warn("数据库中查到数据:" + documentFile);
-            BeanUtils.copyProperties(documentFile, dto);
+            return documentFile;
         } else {
             log.warn("数据库中查询为空:" + documentFile);
-            dto = null;
+            return documentFile = null;
         }
-        return dto;
+
     }
 
     @Override

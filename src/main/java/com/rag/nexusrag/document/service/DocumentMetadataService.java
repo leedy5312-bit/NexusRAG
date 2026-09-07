@@ -14,7 +14,7 @@ public interface DocumentMetadataService extends IService<DocumentFile> {
 
     void updateDeleteStatus(Long id, int x);
 
-    DocumentInfo queryByID(Long id);
+    DocumentFile queryByID(Long id);
 
     boolean isFileHashDuplicate(String fileHash);
 

@@ -7,16 +7,14 @@ import com.rag.nexusrag.document.dto.DocumentInfo;
 import com.rag.nexusrag.document.dto.DocumentUploadResult;
 import com.rag.nexusrag.common.response.ApiResponse;
 import com.rag.nexusrag.common.response.PageResponse;
+import com.rag.nexusrag.document.entity.DocumentFile;
 import com.rag.nexusrag.document.service.DocumentMetadataService;
 import com.rag.nexusrag.document.service.DocumentUploadService;
+import org.apache.ibatis.annotations.Delete;
+import org.springframework.beans.BeanUtils;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
@@ -53,8 +51,9 @@ public class DocumentController {
     @PostMapping
     public ApiResponse<DocumentInfo> queryDocumentById(Long id){
 
-        DocumentInfo documentInfo = documentMetadataService.queryByID(id);
-
+        DocumentFile documentFile = documentMetadataService.queryByID(id);
+        DocumentInfo documentInfo = new DocumentInfo();
+        BeanUtils.copyProperties(documentFile, documentInfo);
         if (documentInfo == null){
             return ApiResponse.fail("文档不存在");
         }
@@ -93,7 +92,13 @@ public class DocumentController {
         return ApiResponse.success(page);
     }
 
-
-
+    /*
+    *  删除文档接口
+    * */
+    @DeleteMapping
+    public ApiResponse<Void> deleteDocumentById(Long id){
+        documentUploadService.deleteDocument(id);
+        return ApiResponse.success();
+    }
 
 }

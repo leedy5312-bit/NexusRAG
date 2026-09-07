@@ -15,6 +15,7 @@ import com.rag.nexusrag.document.enums.UploadStatus;
 import jakarta.annotation.Resource;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -78,11 +79,19 @@ public class DocumentUploadService {
             // 存入MinIO
             StoredObjectInfo objectInfo = documentStorageService.uploadMinio(file, bucket, originalFilename, documentId);
 
+            if (objectInfo == null){
+                documentFile.setUploadStatus(UploadStatus.UPLOAD_FAILED.name());
+                documentFile.setErrorMessage("上传文档到MinIO失败.." + ErrorCode.FILE_UPLOAD_FAILED);
+                now = LocalDateTime.now();
+                documentFile.setUpdatedAt(now);
+            }
+
             objectName = objectInfo.getObjectName();
 
             //文件hash值
             String fileHash = objectInfo.getFileHash();
 
+            // TODO 并发问题 明日修复 将filehash添加唯一约束
             if (documentMetadataService.isFileHashDuplicate(fileHash)) {
                 try {
                     documentStorageService.deleteMinio(bucket, objectName);
@@ -93,19 +102,11 @@ public class DocumentUploadService {
             }
 
             documentFile.setFileHash(fileHash);
+            documentFile.setObjectName(objectName);
+            documentFile.setUploadStatus(UploadStatus.UPLOADED.name());
+            now = LocalDateTime.now();
+            documentFile.setUpdatedAt(now);
 
-            if (objectInfo == null){
-                documentFile.setUploadStatus(UploadStatus.UPLOAD_FAILED.name());
-                documentFile.setErrorMessage("上传文档到MinIO失败.." + ErrorCode.FILE_UPLOAD_FAILED);
-                now = LocalDateTime.now();
-                documentFile.setUpdatedAt(now);
-            }
-            else {
-                documentFile.setObjectName(objectName);
-                documentFile.setUploadStatus(UploadStatus.UPLOADED.name());
-                now = LocalDateTime.now();
-                documentFile.setUpdatedAt(now);
-            }
 
             // 存入数据库
             boolean saveFileMetadata = documentMetadataService.saveFileMetadata(documentFile);
@@ -125,11 +126,31 @@ public class DocumentUploadService {
             throw new BusinessException(ErrorCode.DOCUMENT_UPLOAD_FAILED, "文档上传失败", e);
         }
 
-        DocumentInfo documentInfo = documentMetadataService.queryByID(id);
+        DocumentFile result = documentMetadataService.queryByID(id);
         DocumentUploadResult documentUploadResult = new DocumentUploadResult();
-        BeanUtils.copyProperties(documentInfo, documentUploadResult);
+        BeanUtils.copyProperties(result, documentUploadResult);
 
         return documentUploadResult;
 
     }
+
+    @Transactional
+    public void deleteDocument(Long id){
+        // 先在数据库中查询数据是否存在
+        DocumentFile documentFile = documentMetadataService.queryByID(id);
+        if (documentFile == null){
+            throw new BusinessException(ErrorCode.NOT_FOUND);
+        }
+        // 先将字段deleted改为1
+        documentMetadataService.updateDeleteStatus(id, 1);
+
+        // 删除 MinIO 中的文档
+        try {
+            documentStorageService.deleteMinio(documentFile.getBucketName(), documentFile.getObjectName());
+        } catch (Exception e) {
+            documentMetadataService.updateDeleteStatus(id, 0);
+            throw new BusinessException(ErrorCode.MINIO_ERROR);
+        }
+    }
+
 }

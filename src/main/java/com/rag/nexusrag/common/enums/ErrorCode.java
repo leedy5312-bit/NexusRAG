@@ -13,6 +13,8 @@ public enum ErrorCode {
     METHOD_NOT_ALLOWED(405, "请求方法不支持", HttpStatus.METHOD_NOT_ALLOWED),
     MEDIA_TYPE_NOT_SUPPORTED(415, "请求媒体类型不支持", HttpStatus.UNSUPPORTED_MEDIA_TYPE),
 
+    DB_ERROR(900, "数据库服务异常", HttpStatus.INTERNAL_SERVER_ERROR),
+
     FILE_DUPLICATE(1000, "文件重复，服务器已存在相同文件", HttpStatus.CONFLICT),
     FILE_EMPTY(1001, "上传文件不能为空", HttpStatus.BAD_REQUEST),
     FILE_NAME_EMPTY(10011, "上传文件名称不能为空", HttpStatus.BAD_REQUEST),

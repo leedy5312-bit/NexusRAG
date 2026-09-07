@@ -52,11 +52,11 @@ public class DocumentController {
     public ApiResponse<DocumentInfo> queryDocumentById(Long id){
 
         DocumentFile documentFile = documentMetadataService.queryByID(id);
-        DocumentInfo documentInfo = new DocumentInfo();
-        BeanUtils.copyProperties(documentFile, documentInfo);
-        if (documentInfo == null){
+        if (documentFile == null){
             return ApiResponse.fail("文档不存在");
         }
+        DocumentInfo documentInfo = new DocumentInfo();
+        BeanUtils.copyProperties(documentFile, documentInfo);
 
         return ApiResponse.success(documentInfo);
     }

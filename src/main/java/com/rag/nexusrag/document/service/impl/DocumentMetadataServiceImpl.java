@@ -29,9 +29,7 @@ public class DocumentMetadataServiceImpl extends ServiceImpl<DocumentFileMapper,
         return lambdaQuery()
                 .eq(DocumentFile::getFileHash, fileHash)
                 .exists();
-
     }
-
 
     /*
     * 文档上传到 MinIO 之后将元数据写入MySQL
@@ -41,22 +39,19 @@ public class DocumentMetadataServiceImpl extends ServiceImpl<DocumentFileMapper,
         return save(documentFile);
     }
 
-    /*
-    *  上传MinIO失败将数据库中deleted改为1
-    * */
+
     @Override
-    public void updateDeleteStatus(Long id,int x){
+    public void updateDeleteStatus(Long id, int deleted, String fileHash) {
         LocalDateTime now = LocalDateTime.now();
         boolean ok = update(null, Wrappers.lambdaUpdate(DocumentFile.class)
                 .eq(DocumentFile::getId, id)
+                .set(DocumentFile::getFileHash, fileHash)
                 .set(DocumentFile::getUpdatedAt, now)
-                .set(DocumentFile::getDeleted, x));
-         if (ok){
-             log.warn("数据库deleted更新成功");
-         } else {
-             log.error("数据库deleted更新失败");
-             throw new BusinessException(ErrorCode.DB_ERROR);
-         }
+                .set(DocumentFile::getDeleted, deleted));
+        if (!ok) {
+            log.error("数据库删除状态更新失败, id=" + id + ", deleted=" + deleted);
+            throw new BusinessException(ErrorCode.DB_ERROR);
+        }
     }
 
     @Override
@@ -145,5 +140,4 @@ public class DocumentMetadataServiceImpl extends ServiceImpl<DocumentFileMapper,
         BeanUtils.copyProperties(documentFile, dto);
         return dto;
     }
-
 }

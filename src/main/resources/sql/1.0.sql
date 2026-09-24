@@ -24,7 +24,7 @@ CREATE TABLE document_file (
                                PRIMARY KEY (id),
                                UNIQUE KEY uk_document_id (document_id),
                                UNIQUE KEY uk_bucket_object (bucket_name, object_name),
-                               KEY idx_file_hash (file_hash),
+                               UNIQUE KEY uk_file_hash (file_hash),
                                KEY idx_upload_status (upload_status),
                                KEY idx_parse_status (parse_status),
                                KEY idx_created_at (created_at)

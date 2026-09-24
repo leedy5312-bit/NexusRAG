@@ -12,7 +12,7 @@ public interface DocumentMetadataService extends IService<DocumentFile> {
 
     boolean saveFileMetadata(DocumentFile documentFile);
 
-    void updateDeleteStatus(Long id, int x);
+    void updateDeleteStatus(Long id, int deleted, String fileHash);
 
     DocumentFile queryByID(Long id);
 

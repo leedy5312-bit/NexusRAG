@@ -91,7 +91,6 @@ public class DocumentUploadService {
             //文件hash值
             String fileHash = objectInfo.getFileHash();
 
-            // TODO 并发问题 明日修复 将filehash添加唯一约束
             if (documentMetadataService.isFileHashDuplicate(fileHash)) {
                 try {
                     documentStorageService.deleteMinio(bucket, objectName);
